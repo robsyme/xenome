@@ -20,8 +20,8 @@ process MakeIndex {
         --host ${mouse} \\
         --prefix out \\
         --kmer-size 25 \\
-        --num-threads ${task.cpus} \\
-        --max-memory ${task.memory.toGiga()} \\
+        --num-threads ${task.cpus - 2} \\
+        --max-memory ${task.memory.toGiga() - 5} \\
         --verbose \\
         --log-file xenome.log
     """
