@@ -50,7 +50,7 @@ process MakeFastq {
     container 'wave.seqera.io/wt/e52681b5e0d2/wave/build:sra-tools--3018c98f5d3f2a24'
 
     input: path(sra)
-    output: tuple path("_1.fastq"), path("_2.fastq")
+    output: tuple path("*_1.fastq"), path("*_2.fastq")
     script: "fasterq-dump $sra --threads ${task.cpus}"
 }
 
