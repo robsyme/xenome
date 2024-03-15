@@ -1,5 +1,18 @@
 #!/usr/bin/env nextflow
 
+workflow {
+    mouse = Channel.fromPath(params.mouse)
+    human = Channel.fromPath(params.human)
+    reads = Channel.fromPath(params.reads) 
+    
+    reads | MakeFastq
+
+    mouse.combine(human)
+    | MakeIndex
+    | view
+}
+
+
 process MakeIndex {
     publishDir params.outdir
     container 'robsyme/xenome:latest'
@@ -11,7 +24,7 @@ process MakeIndex {
     tuple path(mouse), path(human)
 
     output:
-    path("*")
+    path("out*")
 
     script:
     """
@@ -27,11 +40,31 @@ process MakeIndex {
     """
 }
 
-workflow {
-    mouse = Channel.fromPath(params.mouse)
-    human = Channel.fromPath(params.human)
+process MakeFastq {
+    container 'wave.seqera.io/wt/e52681b5e0d2/wave/build:sra-tools--3018c98f5d3f2a24'
+    input: path(sra)
+    output: tuple path("_1.fastq.gz"), path("_2.fastq.gz")
+    script: "fasterq-dump $sra --threads ${task.cpus} && gzip *.fastq"
+}
 
-    mouse.combine(human)
-    | MakeIndex
-    | view
+process Classify {
+    memory '64G'
+
+    input: tuple path(index), path(fwd), path(rev)
+    output: path("classify*")
+
+    script:
+    """
+    xenome classify \\
+        -l classify.xenome_log.txt \\
+        -T $task.cpus \\
+        --pairs \\
+        --fastq-in ${fwd} \\
+        --fastq-in ${rev} \\
+        --prefix out \\
+        --graft-name human \\
+        --host-name mouse \\
+        --max-memory ${task.memory.toGiga() - 2} \\
+        --output-filename-prefix classify > classify.xenome_stats.txt
+    """
 }
