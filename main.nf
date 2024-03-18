@@ -12,8 +12,9 @@ workflow {
     
     MakeIndex.out
     | combine(MakeFastq.out)
-    | Classify
-    | view
+    | view { "Before classify: $it" }
+    // | Classify
+    // | view
 }
 
 
