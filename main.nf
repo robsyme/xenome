@@ -7,7 +7,8 @@ workflow {
     
     reads | MakeFastq
 
-    mouse.combine(human)
+    mouse
+    | combine(human)
     | MakeIndex
     
     MakeIndex.out
