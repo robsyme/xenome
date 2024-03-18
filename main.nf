@@ -11,6 +11,7 @@ workflow {
     | MakeIndex
     
     MakeIndex.out
+    | map { [it] }
     | combine(MakeFastq.out)
     | view { "Before classify: $it" }
     // | Classify
