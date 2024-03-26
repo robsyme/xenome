@@ -16,6 +16,15 @@ workflow {
     | view
 }
 
+process MakeFastq {
+    cpus 8
+    memory '8G'
+    conda 'bioconda::sra-tools'
+
+    input: path(sra)
+    output: tuple path("*_1.fastq"), path("*_2.fastq")
+    script: "fasterq-dump $sra --threads ${task.cpus}"
+}
 
 process MakeIndex {
     publishDir params.outdir
@@ -44,20 +53,11 @@ process MakeIndex {
     """
 }
 
-process MakeFastq {
-    cpus 8
-    memory '8G'
-    conda 'bioconda::sra-tools'
-
-    input: path(sra)
-    output: tuple path("*_1.fastq"), path("*_2.fastq")
-    script: "fasterq-dump $sra --threads ${task.cpus}"
-}
-
 process Classify {
     cpus 8
     memory '64G'
-
+    container 'robsyme/xenome:latest'
+    
     input: tuple path(index), path(fwd), path(rev)
     output: path("classify*")
 
